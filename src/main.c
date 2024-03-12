@@ -60,7 +60,7 @@ Node *parse_to_postfix(char *expr) {
             if (c == '-' &&
                 ((op_stack->top != NULL &&
                   (previous_node_is_op || (op_stack->top->value_type == TYPE_PAREN && !converted_num))) ||
-                 !first_node_created)) {
+                 output->top == NULL)) {
                 c = '*';
                 stack_push(output, node_create(-1, TYPE_NUMBER));
             }
@@ -106,13 +106,13 @@ Node *parse_to_postfix(char *expr) {
     free(output);
     free(num_buf);
 
-    //  Node *head = bottom;
+   //   Node *head = bottom;
 
-    //  while (head != NULL) {
-    //      node_print(head, 0);
-    //      head = head->previous;
-    //  }
-    //  printf("\n");
+   //   while (head != NULL) {
+   //       node_print(head, 0);
+   //       head = head->previous;
+   //   }
+   //   printf("\n");
 
     return bottom;
 }
