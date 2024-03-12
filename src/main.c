@@ -19,15 +19,19 @@ int main(void) {
         }
 
         Node *parsed = parse_to_postfix(expr);
-        long double result = evaluate_postfix(parsed);
+        if (parsed != NULL) {
+            long double result = evaluate_postfix(parsed);
 
-        printf("%Lf\n", result);
-        memset(expr, 0, strlen(expr) + 1);
+            printf("= %Lf\n", result);
+        }
+        memset(expr, 0, strlen(expr));
     }
 
     return 0;
 }
 
+// TODO: make right associative operators work with negative numbers,
+// ex "3 ^ -2" = "3 ^ (-1 * 2)", not "3 ^ -1 * 2"
 Node *parse_to_postfix(char *expr) {
     Stack *output = stack_create(NULL);
     Stack *op_stack = stack_create(NULL);
@@ -41,7 +45,7 @@ Node *parse_to_postfix(char *expr) {
     }
 
     for (char c = *expr; c != 0; c = *++expr) {
-        if (isspace(c)) {
+        if (isspace(c) || isalpha(c)) {
             continue;
         }
 
@@ -106,13 +110,13 @@ Node *parse_to_postfix(char *expr) {
     free(output);
     free(num_buf);
 
-   //   Node *head = bottom;
+    //   Node *head = bottom;
 
-   //   while (head != NULL) {
-   //       node_print(head, 0);
-   //       head = head->previous;
-   //   }
-   //   printf("\n");
+    //   while (head != NULL) {
+    //       node_print(head, 0);
+    //       head = head->previous;
+    //   }
+    //   printf("\n");
 
     return bottom;
 }
