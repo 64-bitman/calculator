@@ -191,7 +191,7 @@ int get_precedence(char operator) {
         case '^':
             return 3;
         default:
-            printf("cannot get precendence of unknown operator '%c'", operator);
+            printf("cannot get precendence of unknown operator '%c'\n", operator);
             return 0;
     }
 }
@@ -209,8 +209,11 @@ int is_left_assoc(char operator) {
         case '^':
             return 0;
         default:
-            printf(
-                "cannot get associativity of unknown operator '%c'", operator);
+            printf("cannot get associativity of unknown operator '%c'\n", operator);
             return 0;
     }
+}
+
+int node_check_valuetype(Node *target, enum NodeType type) {
+    return (target == NULL || target->value_type != type) ? 0 : 1;
 }

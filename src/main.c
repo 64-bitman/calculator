@@ -67,9 +67,17 @@ Node *parse_to_postfix(char *expr) {
                  output->top == NULL)) {
                 c = '*';
                 stack_push(output, node_create(-1, TYPE_NUMBER));
+
+                // simulate having -1 * take precedence over right associative operators
+                if (node_check_valuetype(op_stack->top, TYPE_OPERATOR) &&
+                    !is_left_assoc(op_stack->top->operator)) {
+
+                    stack_push(op_stack, node_create(c, TYPE_OPERATOR)); // push c to op_stack
+                    goto exit_ifs;                                       // skip reset of if statements
+                }
             }
 
-            while ((op_stack->top != NULL && op_stack->top->value_type == TYPE_OPERATOR) &&
+            while (node_check_valuetype(op_stack->top, TYPE_OPERATOR) &&
                    ((is_left_assoc(c) && get_precedence(c) <= get_precedence(op_stack->top->operator)) ||
                     (!is_left_assoc(c) && get_precedence(c) < get_precedence(op_stack->top->operator)))) {
 
@@ -79,7 +87,7 @@ Node *parse_to_postfix(char *expr) {
         } else if (c == '(') {
             stack_push(op_stack, node_create(c, TYPE_PAREN));
         } else if (c == ')') {
-            while (op_stack->top->value_type != TYPE_PAREN && op_stack->top->paren != '(') {
+            while (!node_check_valuetype(op_stack->top, TYPE_PAREN) && op_stack->top->paren != '(') {
                 stack_push(output, stack_pop(op_stack)); // pop from stack to output
             }
             free(stack_pop(op_stack)); // free left parenthesis
@@ -87,6 +95,7 @@ Node *parse_to_postfix(char *expr) {
             num_buf[strlen(num_buf)] = c;
         }
 
+    exit_ifs:
         // set reference to first node added to output
         if (!first_node_created && output->top != NULL) {
             bottom = output->top;
@@ -110,13 +119,13 @@ Node *parse_to_postfix(char *expr) {
     free(output);
     free(num_buf);
 
-    //   Node *head = bottom;
+    // Node *head = bottom;
 
-    //   while (head != NULL) {
-    //       node_print(head, 0);
-    //       head = head->previous;
-    //   }
-    //   printf("\n");
+    // while (head != NULL) {
+    //     node_print(head, 0);
+    //     head = head->previous;
+    // }
+    // printf("\n");
 
     return bottom;
 }
@@ -128,9 +137,9 @@ long double evaluate_postfix(Node *expr) {
     while (expr != NULL) {
         previous = expr->previous;
 
-        if (expr->value_type == TYPE_NUMBER) {
+        if (node_check_valuetype(expr, TYPE_NUMBER)) {
             stack_push(stack, node_remove(expr));
-        } else if (expr->value_type == TYPE_OPERATOR) {
+        } else if (node_check_valuetype(expr, TYPE_OPERATOR)) {
             Node *a = stack_pop(stack), *b = stack_pop(stack);
             long double result;
 
