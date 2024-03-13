@@ -37,7 +37,7 @@ Node *parse_to_postfix(char *expr) {
     Stack *op_stack = stack_create(NULL);
     Node *bottom = NULL;
     int first_node_created = 0, previous_node_is_op = 1;
-    char *num_buf = calloc(strlen(expr), sizeof(char));
+    char *num_buf = calloc(strlen(expr) + 1, sizeof(char));
 
     if (num_buf == NULL) {
         printf("calloc error for parse_to_postfix");
@@ -113,6 +113,10 @@ Node *parse_to_postfix(char *expr) {
     // pop remaining operators in op_stack to output
     while (op_stack->top != NULL) {
         stack_push(output, stack_pop(op_stack));
+    }
+
+    if (!first_node_created && output->top != NULL) {
+        bottom = output->top;
     }
 
     stack_free(op_stack);
