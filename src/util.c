@@ -27,8 +27,8 @@ Node *node_create(long double value, enum NodeType type) {
     Node *new = malloc(sizeof(*new));
 
     if (new == NULL) {
-        printf("malloc error for node\n");
-        return NULL;
+        perror("error:");
+        abort();
     }
 
     new->next = NULL;
@@ -45,7 +45,7 @@ Node *node_create(long double value, enum NodeType type) {
             new->paren = (char)value;
             break;
         default:
-            printf("undeclared NodeValue\n");
+            printf("error: no matching NodeType\n");
             return NULL;
     }
     new->value_type = type;
@@ -68,7 +68,8 @@ Node *node_insert(Node *target, Node *previous, Node *next) {
 
 Node *node_remove(Node *target) {
     if (target == NULL) {
-        printf("cannot remove NULL node\n");
+        printf("error: cannot remove NULL node\n");
+        return NULL;
     }
     Node *previous = target->previous, *next = target->next;
 
@@ -107,8 +108,8 @@ Stack *stack_create(Node *head) {
     Stack *new = malloc(sizeof(*new));
 
     if (new == NULL) {
-        printf("malloc error for stack\n");
-        return NULL;
+        perror("error:");
+        abort();
     }
     new->top = head;
 
@@ -125,7 +126,7 @@ void stack_free(Stack *target) {
 Node *stack_push(Stack *target, Node *node) {
     if (target != NULL) {
         if (node == NULL) {
-            printf("cannot push NULL node to stack\n");
+            printf("error: cannot push NULL node to stack\n");
             return NULL;
         }
         Node *prev_top = target->top;
@@ -135,7 +136,7 @@ Node *stack_push(Stack *target, Node *node) {
 
         return node;
     } else {
-        printf("cannot push on undeclared Stack\n");
+        printf("error: cannot push on undeclared Stack\n");
         return NULL;
     }
 }
@@ -145,7 +146,8 @@ Node *stack_pop(Stack *target) {
         Node *top = target->top;
 
         if (top == NULL) {
-            printf("cannot pop NULL node from stack\n");
+            printf("error: cannot pop NULL node from stack\n");
+            return NULL;
         }
 
         Node *new_top = top->next;
@@ -155,7 +157,7 @@ Node *stack_pop(Stack *target) {
         return popped;
 
     } else {
-        printf("cannot pop on undeclared Stack\n");
+        printf("error: cannot pop on undeclared Stack\n");
         return NULL;
     }
 }
@@ -191,7 +193,7 @@ int get_precedence(char operator) {
         case '^':
             return 3;
         default:
-            printf("cannot get precendence of unknown operator '%c'\n", operator);
+            printf("error: cannot get precendence of unknown operator '%c'\n", operator);
             return 0;
     }
 }
@@ -209,7 +211,7 @@ int is_left_assoc(char operator) {
         case '^':
             return 0;
         default:
-            printf("cannot get associativity of unknown operator '%c'\n", operator);
+            printf("error: cannot get associativity of unknown operator '%c'\n", operator);
             return 0;
     }
 }

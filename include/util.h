@@ -1,7 +1,7 @@
 #ifndef INCLUDE_UTIL_H
 #define INCLUDE_UTIL_H
 
-enum NodeType { TYPE_OPERATOR, TYPE_NUMBER, TYPE_PAREN, TYPE_NONE};
+enum NodeType { TYPE_OPERATOR, TYPE_NUMBER, TYPE_PAREN};
 
 typedef struct Node {
     struct Node *next;

@@ -6,7 +6,7 @@
 #include <string.h>
 
 Node *parse_to_postfix(char *expr);
-long double evaluate_postfix(Node *expr);
+long double evaluate_postfix(Node *expr, int *err);
 
 int main(void) {
     char expr[200] = {0};
@@ -19,10 +19,14 @@ int main(void) {
         }
 
         Node *parsed = parse_to_postfix(expr);
-        if (parsed != NULL) {
-            long double result = evaluate_postfix(parsed);
 
-            printf("= %Lf\n", result);
+        if (parsed != NULL) {
+            int err;
+            long double result = evaluate_postfix(parsed, &err);
+
+            if (err == 0) {
+                printf("= %Lf\n", result);
+            }
         }
         memset(expr, 0, strlen(expr));
     }
@@ -30,8 +34,6 @@ int main(void) {
     return 0;
 }
 
-// TODO: make right associative operators work with negative numbers,
-// ex "3 ^ -2" = "3 ^ (-1 * 2)", not "3 ^ -1 * 2"
 Node *parse_to_postfix(char *expr) {
     Stack *output = stack_create(NULL);
     Stack *op_stack = stack_create(NULL);
@@ -40,12 +42,12 @@ Node *parse_to_postfix(char *expr) {
     char *num_buf = calloc(strlen(expr) + 1, sizeof(char));
 
     if (num_buf == NULL) {
-        printf("calloc error for parse_to_postfix");
-        return NULL;
+        perror("error:");
+        abort();
     }
 
     for (char c = *expr; c != 0; c = *++expr) {
-        if (isspace(c) || isalpha(c)) {
+        if (isspace(c)) {
             continue;
         }
 
@@ -72,8 +74,8 @@ Node *parse_to_postfix(char *expr) {
                 if (node_check_valuetype(op_stack->top, TYPE_OPERATOR) &&
                     !is_left_assoc(op_stack->top->operator)) {
 
-                    stack_push(op_stack, node_create(c, TYPE_OPERATOR)); // push c to op_stack
-                    goto exit_ifs;                                       // skip reset of if statements
+                    stack_push(op_stack, node_create(c, TYPE_OPERATOR)); // push * to op_stack
+                    goto exit_ifs;
                 }
             }
 
@@ -134,9 +136,11 @@ Node *parse_to_postfix(char *expr) {
     return bottom;
 }
 
-long double evaluate_postfix(Node *expr) {
+long double evaluate_postfix(Node *expr, int *err) {
     Stack *stack = stack_create(NULL);
     Node *previous = expr->previous;
+
+    *err = 0;
 
     while (expr != NULL) {
         previous = expr->previous;
@@ -144,6 +148,12 @@ long double evaluate_postfix(Node *expr) {
         if (node_check_valuetype(expr, TYPE_NUMBER)) {
             stack_push(stack, node_remove(expr));
         } else if (node_check_valuetype(expr, TYPE_OPERATOR)) {
+            if (stack->top == NULL || stack->top->next == NULL) {
+                printf("error: syntax error\n");
+                *err = 1;
+                break;
+            }
+
             Node *a = stack_pop(stack), *b = stack_pop(stack);
             long double result;
 
@@ -171,11 +181,10 @@ long double evaluate_postfix(Node *expr) {
         }
         expr = previous;
     }
-    long double whole_result = stack->top->number;
+    long double whole_result = (node_check_valuetype(stack->top, TYPE_NUMBER)) ? stack->top->number : 0;
 
     stack_free(stack);
-    free(previous);
-    free(expr);
+    node_free(expr);
 
     return whole_result;
 }
